@@ -43,10 +43,11 @@ As tasks are completed, they are renamed (e.g. `TASK_1.md` → `TASK_1_DONE.md`)
 
 ## Installation
 
-Clone this repository into your Cursor skills directory:
+Clone this repository and copy the skills into your cursor directory:
 
 ```bash
-git clone git@github.com:dennishenle/incremental-planning-skill.git ~/.cursor/skills/incremental-planning-skill
+cp -r ~/.cursor/skills/incremental-planning-skill/incremental-planning ~/.cursor/skills/incremental-planning
+cp -r ~/.cursor/skills/incremental-planning-skill/incremental-planning-follow ~/.cursor/skills/incremental-planning-follow
 ```
 
 Cursor will automatically detect the skills from the `SKILL.md` files inside each subdirectory.
