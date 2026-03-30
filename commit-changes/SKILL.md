@@ -22,14 +22,18 @@ git rev-parse --abbrev-ref HEAD
 
 If the current branch is **`main`** or **`master`**:
 
-1. **Stop.** Do NOT commit on this branch.
-2. Ask the user what the new branch should be named. **Never invent a branch
-   name yourself.**
-3. Once the user provides a name, create and switch to it:
+1. **Pause and ask the user** whether they want to:
+   - **Push directly** on `main`/`master`, or
+   - **Create a new branch** first.
+2. If the user chooses a new branch, ask them for the branch name. **Never
+   invent a branch name yourself.** Then create and switch to it:
 
 ```bash
 git checkout -b <user-provided-branch-name>
 ```
+
+1. If the user chooses to push directly, proceed with the commit on
+   `main`/`master`.
 
 ### Step 2: Review uncommitted changes
 
@@ -120,7 +124,8 @@ error to the user and **do not force-push** unless explicitly asked.
 ## Important Constraints
 
 - **Never force-push** unless the user explicitly requests it.
-- **Never commit to `main` or `master`** — always branch first (see Step 1).
+- **Always confirm with the user before committing to `main` or `master`**
+  (see Step 1).
 - **Never invent a branch name** — always ask the user.
 - **Never skip the diff review** — the diff is the source of truth for the
   commit message.
