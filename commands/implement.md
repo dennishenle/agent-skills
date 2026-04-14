@@ -1,5 +1,5 @@
 ---
-description: Implement one or all tasks from a /plan-tasks plan using TDD. Single task updates downstream task files. All-tasks mode runs sequentially with one subagent per task via the orchestrator.
+description: Implement one or all tasks from a /plan-tasks plan using TDD. Single task runs inline. All-tasks mode orchestrates sequential subagents — one per task.
 argument-hint: <feature-slug> <task-number | all>
 ---
 
@@ -21,11 +21,11 @@ Parse the first token as `<feature-slug>` and the second as `<target>` (a task n
 
 ## Phase 0 — LOAD PLAN
 
-Resolve the plan directory: `.claude/plans/<feature-slug>/`
+Resolve the plan directory: `.agents/plans/<feature-slug>/`
 
 Read `_index.md`. If the directory or index does not exist:
 ```
-Error: No plan found at .claude/plans/<feature-slug>/
+Error: No plan found at .agents/plans/<feature-slug>/
 Run /plan-tasks <feature-description> to create one first.
 ```
 
@@ -39,7 +39,7 @@ Parse the task list and their current statuses from `_index.md`.
 
 ### 1a. Read and Validate
 
-Read `.claude/plans/<feature-slug>/task-<NN>.md`.
+Read `.agents/plans/<feature-slug>/task-<NN>.md`.
 
 Check `depends_on`: for each listed task number, verify its status is `done` in `_index.md`.
 If a dependency is not done, stop:
@@ -121,22 +121,52 @@ Next: /implement <feature-slug> <NN+1>
 
 ---
 
-## Phase 2 — ALL TASKS MODE
+## Phase 2 — ALL TASKS MODE (Orchestrated)
 
 *Activated when `<target>` is `all`.*
 
-> **MANDATORY:** You MUST delegate to the **orchestrator** agent for all-tasks mode. Do NOT implement tasks yourself in a loop — launch the orchestrator and let it coordinate the subagents. This is non-negotiable.
+You are now the orchestrator. You drive the plan from start to finish by running tasks sequentially — one at a time — using a dedicated subagent for each task. You own the loop, the dependency graph, and the downstream propagation. Subagents own individual task execution. **Do not implement tasks yourself — all coding happens inside subagents.**
 
-Invoke the **orchestrator** agent with:
+### 2a. Pre-flight
 
-- `<plan-dir>`: `.claude/plans/<feature-slug>/`
-- `<task-instructions>`: the template below
+1. Parse `_index.md` to extract the full task list: number, title, status, `depends_on`.
+2. Collect all tasks with `status: pending` in ascending order. Skip tasks that are `done`.
+3. If all tasks are already done, stop:
+   ```
+   All tasks are already complete. Nothing to implement.
+   ```
+4. Validate the dependency graph: every `depends_on` reference must point to a task number that exists in the index. If not, stop:
+   ```
+   Error: Task NN lists depends_on: MM, but task MM does not exist in the plan.
+   ```
 
-The orchestrator handles pre-flight validation, the sequential execution loop, downstream propagation, and the final report. See the orchestrator definition for those mechanics.
+### 2b. Sequential Execution Loop
 
-### Task instruction template
+Process each pending task in ascending order. **Never run two tasks in parallel.** Tasks may depend on the outputs of previous tasks.
 
-Pass the following as `<task-instructions>` to the orchestrator. The orchestrator substitutes `<NN>` and `<plan-dir>` before handing it to each subagent.
+#### Step 1 — Dependency Check
+
+Re-read `_index.md` (it may have been updated by a previous iteration).
+
+Verify that every task listed in the current task's `depends_on` has `status: done`.
+
+If a dependency is not done:
+```
+Error: Task NN depends on task MM which is not yet complete.
+This indicates a plan ordering problem. Halting loop.
+```
+Halt and wait for user instruction.
+
+#### Step 2 — Spawn Task Subagent
+
+Launch a **generalPurpose** subagent (using the Task tool) for the current task. Build the prompt by combining:
+
+- The full content of `task-<NN>.md`
+- The full content of `_index.md` (current, as-of this iteration)
+- The full content of all downstream `task-*.md` files (tasks with numbers > NN that have `status: pending` or `status: in-progress`)
+- The task instructions below, with `<NN>` replaced by the actual task number and `<plan-dir>` replaced by `.agents/plans/<feature-slug>/`
+
+**Task instructions to pass to each subagent:**
 
 ````
 You are implementing task <NN> from the plan at <plan-dir>.
@@ -148,7 +178,7 @@ Update `task-<NN>.md` frontmatter: set `status: in-progress`.
 Update the corresponding row in `_index.md` to `in-progress`.
 
 ## 2. Implement with TDD
-Apply the tdd-workflow to implement this task using its acceptance criteria as the test target:
+Apply the tdd-workflow skill to implement this task using its acceptance criteria as the test target:
 1. RED   — Write failing tests that cover each acceptance criterion
 2. GREEN — Write the minimum implementation to make all tests pass
 3. REFACTOR — Clean up without breaking tests
@@ -189,7 +219,7 @@ If any interface, file path, type name, or data structure you introduced or chan
   > Updated after task <NN>: <brief reason>
 - Do NOT alter the task's Goal or Acceptance Criteria unless a criterion has become impossible or redundant. If so, annotate with a strikethrough and a note — never delete silently.
 
-When done, output a short summary:
+When done, return a short summary:
 - Task status (done / failed)
 - Tests written and passing
 - Files changed
@@ -197,10 +227,71 @@ When done, output a short summary:
 - Any deviations from the plan
 ````
 
-After the orchestrator's final report, append:
+#### Step 3 — Verify Completion
+
+After the subagent returns, re-read `task-<NN>.md` and confirm `status: done`.
+
+**If done:** continue to Step 4.
+
+**If not done or the subagent reported an error:**
+```
+Task NN failed or was not marked done.
+
+Subagent output:
+<paste subagent summary here>
+
+Options:
+  continue — re-attempt this task with a new subagent
+  skip     — mark task NN as skipped and move to NN+1
+  abort    — stop the entire loop here
+```
+Pause and wait for user instruction before proceeding.
+
+#### Step 4 — Propagate Downstream Updates
+
+Read the **Interface changes** section written by the subagent in `task-<NN>.md`.
+
+Check all downstream `task-*.md` files (pending or in-progress, number > NN) for references to any type, interface, function, file path, or data shape the subagent changed or added.
+
+For any downstream task that needs updating and was **not** already updated by the subagent:
+- Update its **Context** section to reflect the actual implementation
+- Prepend: `> Updated after task NN: <brief reason>`
+- Do not alter **Goal** or **Acceptance Criteria** silently
+
+This step is necessary because subagents only see tasks immediately downstream; you hold the full graph view.
+
+#### Step 5 — Advance
+
+Move to the next pending task and repeat from Step 1.
+
+### 2c. Final Report
+
+After all tasks complete (or the loop is halted by a failure), output:
 
 ```
+## Implementation Complete: .agents/plans/<feature-slug>/
+
+| #  | Title            | Status          | Files Changed |
+|----|------------------|-----------------|---------------|
+| 01 | <title>          | done            | N             |
+| 02 | <title>          | done            | N             |
+| 03 | <title>          | skipped/failed  | —             |
+
+Total: N tasks completed, M files created or modified
+
 Suggested next steps:
   /code-review     review all changes before committing
   /prp-commit      commit with a structured message
 ```
+
+---
+
+## Invariants
+
+These rules apply to both single-task and all-tasks mode:
+
+- **Sequential only.** In all-tasks mode, never launch two task subagents simultaneously. Task N+1 must not start until task N is confirmed done.
+- **No silent skips.** If a task cannot run (dependency not met, subagent failure), stop and report. Do not silently skip to the next task.
+- **Read before you write.** Before updating any task file or `_index.md`, re-read the current state to avoid clobbering changes made by subagents.
+- **Downstream propagation is mandatory.** After every task, always check whether interface changes affect later tasks — even if the subagent already updated some of them.
+- **Do not implement yourself in all-tasks mode.** Your job is coordination, verification, and propagation. All actual coding happens inside subagents.
