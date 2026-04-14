@@ -13,7 +13,7 @@ assert_eq() {
 }
 
 assert_contains() {
-  if echo "$1" | grep -q "$2"; then pass; else fail "'$2' not found in output"; fi
+  if echo "$1" | grep -qF -- "$2"; then pass; else fail "'$2' not found in output"; fi
 }
 
 assert_file_exists() {
