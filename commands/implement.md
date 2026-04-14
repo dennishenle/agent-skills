@@ -125,6 +125,8 @@ Next: /implement <feature-slug> <NN+1>
 
 *Activated when `<target>` is `all`.*
 
+> **MANDATORY:** You MUST delegate to the **orchestrator** agent for all-tasks mode. Do NOT implement tasks yourself in a loop — launch the orchestrator and let it coordinate the subagents. This is non-negotiable.
+
 Invoke the **orchestrator** agent with:
 
 - `<plan-dir>`: `.claude/plans/<feature-slug>/`
