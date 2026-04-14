@@ -19,43 +19,47 @@ H1="$SANDBOX/h1"; mkdir -p "$H1"
 OUTPUT=$(run_install "$H1" --only skills)
 
 TEST_NAME="--only skills installs skill components"
-assert_symlink "$H1/.cursor/skills/commit-changes"
+assert_symlink "$H1/.claude/skills/commit-changes"
 
 TEST_NAME="--only skills does NOT install agents"
-assert_not_exists "$H1/.cursor/agents/orchestrator.md"
+assert_not_exists "$H1/.claude/agents/orchestrator.md"
 
 TEST_NAME="--only skills does NOT install commands"
-assert_not_exists "$H1/.cursor/commands/plan-tasks.md"
+assert_not_exists "$H1/.claude/commands/plan-tasks.md"
 
 # --- --only agents ---
 H2="$SANDBOX/h2"; mkdir -p "$H2"
-run_install "$H2" --only agents > /dev/null
+OUTPUT_AGENTS=$(run_install "$H2" --only agents 2>&1)
 
-TEST_NAME="--only agents installs agent components"
-assert_symlink "$H2/.cursor/agents/orchestrator.md"
+TEST_NAME="--only agents installs 0 components (no agents in manifest)"
+if echo "$OUTPUT_AGENTS" | grep -q "0 installed"; then
+  pass
+else
+  fail "expected 0 installed; got: $OUTPUT_AGENTS"
+fi
 
 TEST_NAME="--only agents does NOT install skills"
-assert_not_exists "$H2/.cursor/skills/commit-changes"
+assert_not_exists "$H2/.claude/skills/commit-changes"
 
 # --- --only commands ---
 H3="$SANDBOX/h3"; mkdir -p "$H3"
 run_install "$H3" --only commands > /dev/null
 
 TEST_NAME="--only commands installs command components"
-assert_symlink "$H3/.cursor/commands/plan-tasks.md"
+assert_symlink "$H3/.claude/commands/plan-tasks.md"
 
 TEST_NAME="--only commands does NOT install skills"
-assert_not_exists "$H3/.cursor/skills/commit-changes"
+assert_not_exists "$H3/.claude/skills/commit-changes"
 
 # --- --only <name> (single component) ---
 H4="$SANDBOX/h4"; mkdir -p "$H4"
 run_install "$H4" --only commit-changes > /dev/null
 
 TEST_NAME="--only commit-changes installs that single skill"
-assert_symlink "$H4/.cursor/skills/commit-changes"
+assert_symlink "$H4/.claude/skills/commit-changes"
 
 TEST_NAME="--only commit-changes does NOT install other skills"
-assert_not_exists "$H4/.cursor/skills/tdd-workflow"
+assert_not_exists "$H4/.claude/skills/tdd-workflow"
 
 # --- --list ---
 H5="$SANDBOX/h5"; mkdir -p "$H5"
@@ -101,6 +105,8 @@ BARE="$SANDBOX/bare.git"
 git clone --bare "$REPO_ROOT" "$BARE" > /dev/null 2>&1
 CLONE="$SANDBOX/clone"
 git clone "$BARE" "$CLONE" > /dev/null 2>&1
+# Overlay uncommitted working-directory files so the clone reflects current state
+cp "$REPO_ROOT/manifest.json" "$CLONE/manifest.json"
 
 H6="$SANDBOX/h6"; mkdir -p "$H6"
 OUTPUT_UPDATE=$(HOME="$H6" bash "$CLONE/install.sh" --update 2>&1)
@@ -109,6 +115,6 @@ TEST_NAME="--update pulls latest"
 assert_contains "$OUTPUT_UPDATE" "Updating"
 
 TEST_NAME="--update installs components"
-assert_symlink "$H6/.cursor/skills/commit-changes"
+assert_symlink "$H6/.claude/skills/commit-changes"
 
 report

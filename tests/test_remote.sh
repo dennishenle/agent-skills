@@ -48,8 +48,18 @@ else
 fi
 
 # --- Functional test: simulate remote install with a local bare repo ---
+# Build a source repo that includes uncommitted working-directory changes (e.g. manifest.json)
+# so the remote_install clones the current intended state, not stale committed content.
+TEMP_SRC="$SANDBOX/temp_src"
+git clone "$REPO_ROOT" "$TEMP_SRC" > /dev/null 2>&1
+cp "$REPO_ROOT/manifest.json" "$TEMP_SRC/manifest.json"
+git -C "$TEMP_SRC" -c user.email="test@test.com" -c user.name="Test" \
+  add manifest.json > /dev/null 2>&1
+git -C "$TEMP_SRC" -c user.email="test@test.com" -c user.name="Test" \
+  commit -m "test: sync manifest" > /dev/null 2>&1 || true
+
 BARE_REPO="$SANDBOX/bare.git"
-git clone --bare "$REPO_ROOT" "$BARE_REPO" > /dev/null 2>&1
+git clone --bare "$TEMP_SRC" "$BARE_REPO" > /dev/null 2>&1
 
 CLONE_TARGET="$SANDBOX/cloned"
 
@@ -60,10 +70,10 @@ TEST_NAME="remote mode clones repo to AGENT_SKILLS_DIR"
 if [[ -d "$CLONE_TARGET/.git" ]]; then pass; else fail "clone dir not created at $CLONE_TARGET"; fi
 
 TEST_NAME="remote mode installs components after cloning"
-assert_symlink "$FAKE_HOME/.cursor/skills/commit-changes"
+assert_symlink "$FAKE_HOME/.claude/skills/commit-changes"
 
 # --- Re-run: should pull instead of re-clone ---
-rm -f "$FAKE_HOME/.cursor/skills/commit-changes"
+rm -f "$FAKE_HOME/.claude/skills/commit-changes"
 OUTPUT2=$(AGENT_SKILLS_REPO="$BARE_REPO" AGENT_SKILLS_DIR="$CLONE_TARGET" HOME="$FAKE_HOME" \
   bash -c 'source "'"$REPO_ROOT"'/install.sh"; remote_install' 2>&1)
 
@@ -71,6 +81,6 @@ TEST_NAME="second remote run pulls instead of cloning"
 assert_contains "$OUTPUT2" "Updating"
 
 TEST_NAME="second remote run still installs components"
-assert_symlink "$FAKE_HOME/.cursor/skills/commit-changes"
+assert_symlink "$FAKE_HOME/.claude/skills/commit-changes"
 
 report

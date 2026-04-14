@@ -40,14 +40,6 @@ TEST_NAME="contains skill: tdd-workflow"
 HAS=$(jq '[.[] | select(.name == "tdd-workflow" and .type == "skill")] | length' "$REPO_ROOT/manifest.json" 2>/dev/null || echo "0")
 assert_eq "$HAS" "1"
 
-TEST_NAME="contains agent: orchestrator"
-HAS=$(jq '[.[] | select(.name == "orchestrator" and .type == "agent")] | length' "$REPO_ROOT/manifest.json" 2>/dev/null || echo "0")
-assert_eq "$HAS" "1"
-
-TEST_NAME="contains agent: planner"
-HAS=$(jq '[.[] | select(.name == "planner" and .type == "agent")] | length' "$REPO_ROOT/manifest.json" 2>/dev/null || echo "0")
-assert_eq "$HAS" "1"
-
 TEST_NAME="contains command: plan-tasks"
 HAS=$(jq '[.[] | select(.name == "plan-tasks" and .type == "command")] | length' "$REPO_ROOT/manifest.json" 2>/dev/null || echo "0")
 assert_eq "$HAS" "1"

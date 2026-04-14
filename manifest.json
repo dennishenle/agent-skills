@@ -3,19 +3,19 @@
     "name": "commit-changes",
     "type": "skill",
     "source": "skills/commit-changes",
-    "target": "$HOME/.cursor/skills/commit-changes"
+    "target": "$HOME/.claude/skills/commit-changes"
   },
   {
     "name": "create-pull-request",
     "type": "skill",
     "source": "skills/create-pull-request",
-    "target": "$HOME/.cursor/skills/create-pull-request"
+    "target": "$HOME/.claude/skills/create-pull-request"
   },
   {
     "name": "tdd-workflow",
     "type": "skill",
     "source": "skills/tdd-workflow",
-    "target": "$HOME/.cursor/skills/tdd-workflow"
+    "target": "$HOME/.claude/skills/tdd-workflow"
   },
   {
     "name": "plan-tasks",

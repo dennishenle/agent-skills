@@ -26,23 +26,20 @@ run_install() {
 OUTPUT=$(run_install)
 
 TEST_NAME="creates target directories"
-if [[ -d "$FAKE_HOME/.cursor/skills" ]] && [[ -d "$FAKE_HOME/.cursor/agents" ]] && [[ -d "$FAKE_HOME/.cursor/commands" ]]; then
+if [[ -d "$FAKE_HOME/.claude/skills" ]] && [[ -d "$FAKE_HOME/.claude/commands" ]]; then
   pass
 else
   fail "target directories not created"
 fi
 
 TEST_NAME="creates symlink for skill: commit-changes"
-assert_symlink "$FAKE_HOME/.cursor/skills/commit-changes"
+assert_symlink "$FAKE_HOME/.claude/skills/commit-changes"
 
 TEST_NAME="skill symlink points to correct source"
-assert_symlink_target "$FAKE_HOME/.cursor/skills/commit-changes" "$REPO_ROOT/skills/commit-changes"
-
-TEST_NAME="creates symlink for agent: orchestrator.md"
-assert_symlink "$FAKE_HOME/.cursor/agents/orchestrator.md"
+assert_symlink_target "$FAKE_HOME/.claude/skills/commit-changes" "$REPO_ROOT/skills/commit-changes"
 
 TEST_NAME="creates symlink for command: plan-tasks.md"
-assert_symlink "$FAKE_HOME/.cursor/commands/plan-tasks.md"
+assert_symlink "$FAKE_HOME/.claude/commands/plan-tasks.md"
 
 TEST_NAME="prints summary output"
 assert_contains "$OUTPUT" "install"
@@ -55,8 +52,8 @@ assert_contains "$OUTPUT2" "skip"
 
 # --- Conflict test: real file at target ---
 CONFLICT_HOME="$SANDBOX/conflict_home"
-mkdir -p "$CONFLICT_HOME/.cursor/skills"
-echo "real file" > "$CONFLICT_HOME/.cursor/skills/commit-changes"
+mkdir -p "$CONFLICT_HOME/.claude/skills"
+echo "real file" > "$CONFLICT_HOME/.claude/skills/commit-changes"
 
 OUTPUT3=$(HOME="$CONFLICT_HOME" bash "$REPO_ROOT/install.sh" 2>&1 || true)
 

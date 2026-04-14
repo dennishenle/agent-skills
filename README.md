@@ -1,6 +1,6 @@
 # Agent Skills
 
-A collection of [Cursor Agent Skills](https://docs.cursor.com/context/skills), agents, and commands that extend the AI agent with reusable, opinionated workflows.
+A collection of [Cursor Agent Skills](https://docs.claude.com/context/skills), agents, and commands that extend the AI agent with reusable, opinionated workflows.
 
 ## Quick Install
 
@@ -50,13 +50,13 @@ cd agent-skills
 
 | Component | Type | Installed To |
 |-----------|------|-------------|
-| commit-changes | skill | `~/.cursor/skills/commit-changes` |
-| create-pull-request | skill | `~/.cursor/skills/create-pull-request` |
-| tdd-workflow | skill | `~/.cursor/skills/tdd-workflow` |
-| orchestrator | agent | `~/.cursor/agents/orchestrator.md` |
-| planner | agent | `~/.cursor/agents/planner.md` |
-| plan-tasks | command | `~/.cursor/commands/plan-tasks.md` |
-| implement | command | `~/.cursor/commands/implement.md` |
+| commit-changes | skill | `~/.claude/skills/commit-changes` |
+| create-pull-request | skill | `~/.claude/skills/create-pull-request` |
+| tdd-workflow | skill | `~/.claude/skills/tdd-workflow` |
+| orchestrator | agent | `~/.claude/agents/orchestrator.md` |
+| planner | agent | `~/.claude/agents/planner.md` |
+| plan-tasks | command | `~/.claude/commands/plan-tasks.md` |
+| implement | command | `~/.claude/commands/implement.md` |
 
 All installs use symlinks so updates propagate automatically via `git pull`.
 

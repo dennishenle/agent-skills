@@ -22,38 +22,38 @@ if [[ -x "$REPO_ROOT/uninstall.sh" ]]; then pass; else fail "not executable"; fi
 HOME="$FAKE_HOME" bash "$REPO_ROOT/install.sh" > /dev/null 2>&1
 
 TEST_NAME="pre-condition: symlinks exist after install"
-assert_symlink "$FAKE_HOME/.cursor/skills/commit-changes"
+assert_symlink "$FAKE_HOME/.claude/skills/commit-changes"
 
 OUTPUT=$(HOME="$FAKE_HOME" bash "$REPO_ROOT/uninstall.sh" 2>&1)
 
 TEST_NAME="removes skill symlinks"
-assert_not_exists "$FAKE_HOME/.cursor/skills/commit-changes"
+assert_not_exists "$FAKE_HOME/.claude/skills/commit-changes"
 
 TEST_NAME="removes agent symlinks"
-assert_not_exists "$FAKE_HOME/.cursor/agents/orchestrator.md"
+assert_not_exists "$FAKE_HOME/.claude/agents/orchestrator.md"
 
 TEST_NAME="removes command symlinks"
-assert_not_exists "$FAKE_HOME/.cursor/commands/plan-tasks.md"
+assert_not_exists "$FAKE_HOME/.claude/commands/plan-tasks.md"
 
 TEST_NAME="prints summary"
 assert_contains "$OUTPUT" "removed"
 
 # --- Does not remove non-symlink files ---
 SAFE_HOME="$SANDBOX/safe_home"
-mkdir -p "$SAFE_HOME/.cursor/skills"
-echo "real content" > "$SAFE_HOME/.cursor/skills/commit-changes"
+mkdir -p "$SAFE_HOME/.claude/skills"
+echo "real content" > "$SAFE_HOME/.claude/skills/commit-changes"
 
 OUTPUT2=$(HOME="$SAFE_HOME" bash "$REPO_ROOT/uninstall.sh" 2>&1)
 
 TEST_NAME="does not remove real files (non-symlinks)"
-if [[ -f "$SAFE_HOME/.cursor/skills/commit-changes" ]]; then pass; else fail "real file was deleted"; fi
+if [[ -f "$SAFE_HOME/.claude/skills/commit-changes" ]]; then pass; else fail "real file was deleted"; fi
 
 TEST_NAME="reports skipped non-symlinks"
 assert_contains "$OUTPUT2" "skip"
 
 # --- Handles already-gone symlinks ---
 GONE_HOME="$SANDBOX/gone_home"
-mkdir -p "$GONE_HOME/.cursor/skills"
+mkdir -p "$GONE_HOME/.claude/skills"
 
 OUTPUT3=$(HOME="$GONE_HOME" bash "$REPO_ROOT/uninstall.sh" 2>&1)
 
