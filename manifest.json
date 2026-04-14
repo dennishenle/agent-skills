@@ -18,27 +18,15 @@
     "target": "$HOME/.cursor/skills/tdd-workflow"
   },
   {
-    "name": "orchestrator",
-    "type": "agent",
-    "source": "agents/orchestrator.md",
-    "target": "$HOME/.cursor/agents/orchestrator.md"
-  },
-  {
-    "name": "planner",
-    "type": "agent",
-    "source": "agents/planner.md",
-    "target": "$HOME/.cursor/agents/planner.md"
-  },
-  {
     "name": "plan-tasks",
     "type": "command",
     "source": "commands/plan-tasks.md",
-    "target": "$HOME/.cursor/commands/plan-tasks.md"
+    "target": "$HOME/.claude/commands/plan-tasks.md"
   },
   {
     "name": "implement",
     "type": "command",
     "source": "commands/implement.md",
-    "target": "$HOME/.cursor/commands/implement.md"
+    "target": "$HOME/.claude/commands/implement.md"
   }
 ]

@@ -42,17 +42,17 @@ uninstall_components() {
       if [[ "$current" == "$abs_source" ]]; then
         rm "$abs_target"
         printf "  removed  %s (%s)\n" "$name" "$type"
-        ((removed++))
+        removed=$((removed + 1))
       else
         printf "  skip  %s — symlink points elsewhere: %s\n" "$name" "$current"
-        ((skipped++))
+        skipped=$((skipped + 1))
       fi
     elif [[ -e "$abs_target" ]]; then
       printf "  skip  %s — not a symlink, leaving untouched: %s\n" "$name" "$abs_target"
-      ((skipped++))
+      skipped=$((skipped + 1))
     else
       printf "  skip  %s — not installed\n" "$name"
-      ((skipped++))
+      skipped=$((skipped + 1))
     fi
   done < <(parse_manifest "$repo_root")
 }

@@ -5,8 +5,8 @@ PASS_COUNT=0
 FAIL_COUNT=0
 TEST_NAME=""
 
-pass() { ((PASS_COUNT++)); printf "  ✓ %s\n" "$TEST_NAME"; }
-fail() { ((FAIL_COUNT++)); printf "  ✗ %s — %s\n" "$TEST_NAME" "$1"; }
+pass() { PASS_COUNT=$((PASS_COUNT + 1)); printf "  ✓ %s\n" "$TEST_NAME"; }
+fail() { FAIL_COUNT=$((FAIL_COUNT + 1)); printf "  ✗ %s — %s\n" "$TEST_NAME" "$1"; }
 
 assert_eq() {
   if [[ "$1" == "$2" ]]; then pass; else fail "expected '$2', got '$1'"; fi

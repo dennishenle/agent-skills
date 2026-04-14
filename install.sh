@@ -61,22 +61,22 @@ install_components() {
       current="$(readlink "$abs_target")"
       if [[ "$current" == "$abs_source" ]]; then
         printf "  skip  %s (%s already linked)\n" "$name" "$type"
-        ((skipped++))
+        skipped=$((skipped + 1))
         continue
       else
         printf "  warn  %s — symlink exists but points to %s\n" "$name" "$current"
-        ((warned++))
+        warned=$((warned + 1))
         continue
       fi
     elif [[ -e "$abs_target" ]]; then
       printf "  warn  %s — target exists and is not a symlink: %s\n" "$name" "$abs_target"
-      ((warned++))
+      warned=$((warned + 1))
       continue
     fi
 
     ln -s "$abs_source" "$abs_target"
     printf "  installed  %s → %s\n" "$name" "$abs_target"
-    ((installed++))
+    installed=$((installed + 1))
   done < <(parse_manifest "$repo_root")
 }
 
